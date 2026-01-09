@@ -1,13 +1,14 @@
-import mongoose from "mongoose";
-import ObjectId from "mongodb"
+import mongoose, { Schema } from "mongoose";
 
-type Card = {
+interface ICard{
     name: string,
     link: string,
-    owner: any,
+    owner: Schema.Types.ObjectId,
+    likes: Array<Schema.Types.ObjectId>,
+    createdAt: Date
 }
 
-const CardScheme = new mongoose.Schema<Card>({
+const CardScheme = new Schema<ICard>({
     name: {
         type: String,
         required: true,
@@ -19,9 +20,18 @@ const CardScheme = new mongoose.Schema<Card>({
         required: true
     },
     owner: {
-        type: ObjectId,
+        type: Schema.Types.ObjectId,
         required: true
+    },
+    likes : {
+        type: [Schema.Types.ObjectId],
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        required: true,
+        default: Date.now
     }
 })
 
-export default mongoose.model<Card>('user', CardScheme); 
+export default mongoose.model<ICard>('card', CardScheme); 

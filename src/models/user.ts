@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-type User = {
+interface IUser {
     name: string,
     avatar: string
 }
-const UserScheme = new mongoose.Schema<User>({
+const UserScheme = new mongoose.Schema<IUser>({
     name: {
         type: String,
         required: true,
@@ -16,4 +16,4 @@ const UserScheme = new mongoose.Schema<User>({
     }
 })
 
-export default mongoose.model('user', UserScheme)
+export default mongoose.model<IUser>('user', UserScheme)
