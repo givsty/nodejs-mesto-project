@@ -1,16 +1,15 @@
 import { Router } from 'express';
-import { createUser, getUsers } from '../controllers/users';
-// допишите код здесь
+import {
+  createUser, getUsers, findUserById, updateAvatar,
+  updateUser,
+} from '../controllers/users';
 
 const router = Router();
-// допишите код здесь
+
 router.get('/', getUsers);
 router.post('/', createUser);
-// router.get('/:id', () => getUser);
-// router.post('/', postUsers);
-
-// router.patch('/me', (req, res) => {});
-
-// router.patch("/users/me/avatar", (req, res) => {});
+router.patch('/me', updateUser);
+router.get('/:id', findUserById);
+router.patch('/me/avatar', updateAvatar);
 
 export default router;

@@ -16,10 +16,19 @@ export const getCard = (req: Request, res: Response) => {
     .then((users) => res.send({ data: users }))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
+
 export const deleteCard = (req: Request, res: Response) => {
-  Card.find({})
-    .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  const { id } = req.params;
+
+  Card.findByIdAndDelete(id)
+    .then(() => res.send({ message: 'Публикация удалена' }))
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        return res;
+      }
+
+      return res;
+    });
 };
 
 export const likeCard = (req: UserRequest, res: Response) => {
@@ -30,6 +39,17 @@ export const likeCard = (req: UserRequest, res: Response) => {
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
-// export const likeCard = (req: Request, res: Response) => {
+export const deleteLike = (req: UserRequest, res: Response) => {
+  const userId = req.user?._id;
+  const { id } = req.params;
 
-// };
+  Card.findByIdAndUpdate(id, { $pull: { likes: userId as unknown as Object } }, { new: true })
+    .then((updatedCard) => res.send({ data: updatedCard }))
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        return res;
+      }
+
+      return res;
+    });
+};
