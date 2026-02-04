@@ -5,3 +5,9 @@ export interface UserRequest extends Request {
       _id: string;
     };
 }
+
+export interface CreateUser extends Request{
+  name: string;
+  about: string;
+  avatar: string;
+}

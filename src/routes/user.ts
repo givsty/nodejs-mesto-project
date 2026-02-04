@@ -1,17 +1,15 @@
 import { Router } from 'express';
-import { getUsers, postUsers } from '../controllers/users';
+import { createUser, getUsers } from '../controllers/users';
 // допишите код здесь
 
 const router = Router();
 // допишите код здесь
 router.get('/', getUsers);
+router.post('/', createUser);
+// router.get('/:id', () => getUser);
+// router.post('/', postUsers);
 
-router.post('/', postUsers);
-
-// router.put(":userId", (req, res) => {
-// });
-
-// router.patch("/users/me", (req, res) => {});
+// router.patch('/me', (req, res) => {});
 
 // router.patch("/users/me/avatar", (req, res) => {});
 

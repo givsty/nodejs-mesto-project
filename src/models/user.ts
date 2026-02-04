@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 interface IUser {
     name: string,
+    about: string,
     avatar: string
 }
 const UserScheme = new mongoose.Schema<IUser>({
@@ -10,6 +11,12 @@ const UserScheme = new mongoose.Schema<IUser>({
     required: true,
     minLength: 2,
     maxLength: 30,
+  },
+  about: {
+    type: String,
+    required: true,
+    minlength: 2,
+    maxlength: 200,
   },
   avatar: {
     type: String,
