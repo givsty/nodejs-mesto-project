@@ -1,6 +1,8 @@
 import { Response, Request } from 'express';
 // eslint-disable-next-line import/no-unresolved
 import { UserRequest } from 'types/user';
+// eslint-disable-next-line import/no-unresolved
+import { CODE_STATUS, ERROR_MESSAGES } from 'contstants/error';
 import User from '../models/user';
 
 export const createUser = (req: Request, res: Response) => {
@@ -10,17 +12,19 @@ export const createUser = (req: Request, res: Response) => {
     .then((user) => res.status(201).send({ data: user }))
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.uncorrectData });
       }
 
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(CODE_STATUS.internalServerError)
+        .send({ message: ERROR_MESSAGES.somethingWrong });
     });
 };
 
 export const getUsers = (req: Request, res: Response) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(() => res.status(CODE_STATUS.internalServerError)
+      .send({ message: ERROR_MESSAGES.somethingWrong }));
 };
 
 export const findUserById = (req: Request, res: Response) => {
@@ -29,15 +33,16 @@ export const findUserById = (req: Request, res: Response) => {
   User.findById(id)
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
+        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.userNotFoud });
       }
       return res.send({ data: user });
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(400).send({ message: 'Некорректный id' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
       }
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(CODE_STATUS.internalServerError)
+        .send({ message: ERROR_MESSAGES.somethingWrong });
     });
 };
 
@@ -48,21 +53,22 @@ export const updateAvatar = (req: UserRequest, res: Response) => {
   return User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((updatedUser) => {
       if (!updatedUser) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
+        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.userNotFoud });
       }
 
       return res.send({ data: updatedUser });
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.uncorrectData });
       }
 
       if (error.name === 'CastError') {
-        return res.status(400).send({ message: 'Некорректный id' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
       }
 
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(CODE_STATUS.internalServerError)
+        .send({ message: ERROR_MESSAGES.somethingWrong });
     });
 };
 
@@ -73,20 +79,21 @@ export const updateUser = (req: UserRequest, res: Response) => {
   return User.findByIdAndUpdate(userId, { name, about }, { new: true })
     .then((updatedUser) => {
       if (!updatedUser) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
+        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.userNotFoud });
       }
 
       return res.send({ data: updatedUser });
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.uncorrectData });
       }
 
       if (error.name === 'CastError') {
-        return res.status(400).send({ message: 'Некорректный id' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
       }
 
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(CODE_STATUS.internalServerError)
+        .send({ message: ERROR_MESSAGES.somethingWrong });
     });
 };

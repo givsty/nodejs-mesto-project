@@ -39,10 +39,10 @@
             }
         ],
         "no-underscore-dangle": [
-            "error", 
+            "error",
             {
                 "allow": ["_id"]
             }
-        ]   
+        ]
     }
 }

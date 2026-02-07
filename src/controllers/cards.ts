@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 // eslint-disable-next-line import/no-unresolved
 import { UserRequest } from 'types/user';
+// eslint-disable-next-line import/no-unresolved
+import { CODE_STATUS, ERROR_MESSAGES } from 'contstants/error';
 import Card from '../models/card';
 
 export const createCard = (req: UserRequest, res: Response) => {
@@ -10,17 +12,18 @@ export const createCard = (req: UserRequest, res: Response) => {
     .then((card) => res.send({ data: card }))
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
       }
-
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(CODE_STATUS.internalServerError)
+        .send({ message: ERROR_MESSAGES.somethingWrong });
     });
 };
 
 export const getCard = (req: Request, res: Response) => {
   Card.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(() => res.status(CODE_STATUS.badRequest)
+      .send({ message: ERROR_MESSAGES.somethingWrong }));
 };
 
 export const deleteCard = (req: Request, res: Response) => {
@@ -29,15 +32,16 @@ export const deleteCard = (req: Request, res: Response) => {
   Card.findByIdAndDelete(id)
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Карточка не найдена' });
+        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.userNotFoud });
       }
-      return res.send({ message: 'Публикация удалена' });
+      return res.send({ message: 'Карточка удалена' });
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(400).send({ message: 'Некорректный id' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
       }
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(CODE_STATUS.internalServerError)
+        .send({ message: ERROR_MESSAGES.somethingWrong });
     });
 };
 
@@ -47,15 +51,16 @@ export const likeCard = (req: UserRequest, res: Response) => {
   Card.findByIdAndUpdate(id, { $addToSet: { likes: userId } }, { new: true })
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Карточка не найдена' });
+        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.cardNotFound });
       }
       return res.send({ data: card });
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(400).send({ message: 'Некорректный id' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
       }
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(CODE_STATUS.internalServerError)
+        .send({ message: ERROR_MESSAGES.somethingWrong });
     });
 };
 
@@ -66,16 +71,17 @@ export const deleteLike = (req: UserRequest, res: Response) => {
   Card.findByIdAndUpdate(id, { $pull: { likes: userId as unknown as Object } }, { new: true })
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Карточка не найдена' });
+        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.cardNotFound });
       }
 
       return res.send({ data: card });
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(400).send({ message: 'Некорректный id' });
+        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
       }
 
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      return res.status(CODE_STATUS.internalServerError)
+        .send({ message: ERROR_MESSAGES.somethingWrong });
     });
 };
