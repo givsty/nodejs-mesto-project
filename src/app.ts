@@ -2,8 +2,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import cookieParser from 'cookie-parser';
-// eslint-disable-next-line import/no-unresolved
-import { errorLogger } from 'middlewares/logger';
+import { errorLogger } from './middlewares/logger';
 import { login, createUser } from './controllers/users';
 import { ERROR_MESSAGES } from './constants/error';
 import { AppError } from './types/app';

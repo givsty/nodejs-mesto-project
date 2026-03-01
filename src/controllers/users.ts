@@ -1,11 +1,11 @@
 import { Response, Request, NextFunction } from 'express';
-// eslint-disable-next-line import/no-unresolved
+// eslint-disable-next-line import/no-extraneous-dependencies
 import bcrypt from 'bcryptjs';
 // eslint-disable-next-line import/no-unresolved
 import { UserRequest } from 'types/user';
 // eslint-disable-next-line import/no-unresolved
-import { ERROR_MESSAGES } from 'constants/error';
 import jwt from 'jsonwebtoken';
+import { ERROR_MESSAGES } from '../constants/error';
 import User from '../models/user';
 
 import BadRequestError from '../errors/bad-request';

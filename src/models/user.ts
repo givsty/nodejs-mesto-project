@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
-// eslint-disable-next-line import/no-unresolved
+// eslint-disable-next-line import/no-extraneous-dependencies
 import bcrypt from 'bcryptjs';
 
 interface IUser {
@@ -60,7 +60,7 @@ UserScheme.statics.findUserByCredentials = function (email: string, password: st
         return Promise.reject(new Error('unauthorized'));
       }
 
-      return bcrypt.compare(password, user.password).then((matched) => {
+      return bcrypt.compare(password, user.password).then((matched: any) => {
         if (!matched) {
           return Promise.reject(new Error('unauthorized'));
         }
