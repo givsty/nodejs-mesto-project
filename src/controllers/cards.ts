@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 // eslint-disable-next-line import/no-unresolved
 import { UserRequest } from 'types/user';
 // eslint-disable-next-line import/no-unresolved
-import { CODE_STATUS, ERROR_MESSAGES } from 'contstants/error';
+import { CODE_STATUS, ERROR_MESSAGES } from '../constants/error';
 import Card from '../models/card';
 
 export const createCard = (req: UserRequest, res: Response) => {
@@ -26,15 +26,21 @@ export const getCard = (req: Request, res: Response) => {
       .send({ message: ERROR_MESSAGES.somethingWrong }));
 };
 
-export const deleteCard = (req: Request, res: Response) => {
-  const { id } = req.params;
+export const deleteCard = (req: UserRequest, res: Response) => {
+  const { cardId } = req.params;
+  const userId = req.user?._id;
 
-  Card.findByIdAndDelete(id)
+  Card.findById(cardId)
     .then((card) => {
       if (!card) {
-        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.userNotFoud });
+        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.cardNotFound });
       }
-      return res.send({ message: 'Карточка удалена' });
+
+      if (card.owner.toString() !== userId) {
+        return res.status(CODE_STATUS.forbidden).send({ message: ERROR_MESSAGES.forbidden });
+      }
+
+      return card.deleteOne().then(() => res.send({ data: card }));
     })
     .catch((error) => {
       if (error.name === 'CastError') {

@@ -1,99 +1,118 @@
-import { Response, Request } from 'express';
+import { Response, Request, NextFunction } from 'express';
+// eslint-disable-next-line import/no-unresolved
+import bcrypt from 'bcryptjs';
 // eslint-disable-next-line import/no-unresolved
 import { UserRequest } from 'types/user';
 // eslint-disable-next-line import/no-unresolved
-import { CODE_STATUS, ERROR_MESSAGES } from 'contstants/error';
+import { ERROR_MESSAGES } from 'constants/error';
+import jwt from 'jsonwebtoken';
 import User from '../models/user';
 
-export const createUser = (req: Request, res: Response) => {
-  const { name, about, avatar } = req.body;
+import BadRequestError from '../errors/bad-request';
+import NotFoundError from '../errors/not-found';
+import ConflictError from '../errors/conflict';
 
-  User.create({ name, about, avatar })
+export const createUser = (req: Request, res: Response, next: NextFunction) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => res.status(201).send({ data: user }))
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.uncorrectData });
+      if (error.code === 11000) {
+        return next(new ConflictError(ERROR_MESSAGES.conflict));
       }
-
-      return res.status(CODE_STATUS.internalServerError)
-        .send({ message: ERROR_MESSAGES.somethingWrong });
+      if (error.name === 'ValidationError') {
+        return next(new BadRequestError(ERROR_MESSAGES.uncorrectData));
+      }
+      return next(error);
     });
 };
 
-export const getUsers = (req: Request, res: Response) => {
+export const getUsers = (req: Request, res: Response, next: NextFunction) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(CODE_STATUS.internalServerError)
-      .send({ message: ERROR_MESSAGES.somethingWrong }));
+    .catch(next);
 };
 
-export const findUserById = (req: Request, res: Response) => {
+export const findUserById = (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
 
   User.findById(id)
     .then((user) => {
-      if (!user) {
-        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.userNotFoud });
-      }
+      if (!user) return next(new NotFoundError(ERROR_MESSAGES.userNotFoud));
       return res.send({ data: user });
     })
     .catch((error) => {
-      if (error.name === 'CastError') {
-        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
-      }
-      return res.status(CODE_STATUS.internalServerError)
-        .send({ message: ERROR_MESSAGES.somethingWrong });
+      if (error.name === 'CastError') return next(new BadRequestError(ERROR_MESSAGES.unCorrectID));
+      return next(error);
     });
 };
 
-export const updateAvatar = (req: UserRequest, res: Response) => {
+export const updateAvatar = (req: UserRequest, res: Response, next: NextFunction) => {
   const userId = req.user?._id;
   const { avatar } = req.body;
 
   return User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((updatedUser) => {
-      if (!updatedUser) {
-        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.userNotFoud });
-      }
-
+      if (!updatedUser) return next(new NotFoundError(ERROR_MESSAGES.userNotFoud));
       return res.send({ data: updatedUser });
     })
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.uncorrectData });
-      }
-
-      if (error.name === 'CastError') {
-        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
-      }
-
-      return res.status(CODE_STATUS.internalServerError)
-        .send({ message: ERROR_MESSAGES.somethingWrong });
+      if (error.name === 'ValidationError') return next(new BadRequestError(ERROR_MESSAGES.uncorrectData));
+      if (error.name === 'CastError') return next(new BadRequestError(ERROR_MESSAGES.unCorrectID));
+      return next(error);
     });
 };
 
-export const updateUser = (req: UserRequest, res: Response) => {
+export const updateUser = (req: UserRequest, res: Response, next: NextFunction) => {
   const userId = req.user?._id;
   const { name, about } = req.body;
 
   return User.findByIdAndUpdate(userId, { name, about }, { new: true })
     .then((updatedUser) => {
-      if (!updatedUser) {
-        return res.status(CODE_STATUS.notFound).send({ message: ERROR_MESSAGES.userNotFoud });
-      }
-
+      if (!updatedUser) return next(new NotFoundError(ERROR_MESSAGES.userNotFoud));
       return res.send({ data: updatedUser });
     })
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.uncorrectData });
-      }
+      if (error.name === 'ValidationError') return next(new BadRequestError(ERROR_MESSAGES.uncorrectData));
+      if (error.name === 'CastError') return next(new BadRequestError(ERROR_MESSAGES.unCorrectID));
+      return next(error);
+    });
+};
 
-      if (error.name === 'CastError') {
-        return res.status(CODE_STATUS.badRequest).send({ message: ERROR_MESSAGES.unCorrectID });
-      }
+export const login = (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
 
-      return res.status(CODE_STATUS.internalServerError)
-        .send({ message: ERROR_MESSAGES.somethingWrong });
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const { JWT_SECRET = 'secret_key' } = process.env;
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .send({ message: 'Пользователь успешно авторизован' });
+    })
+    .catch(next);
+};
+
+export const getCurrentUser = (req: UserRequest, res: Response, next: NextFunction) => {
+  const _id = req.user?._id;
+
+  User.findById(_id)
+    .then((user) => {
+      if (!user) return next(new NotFoundError(ERROR_MESSAGES.userNotFoud));
+      return res.send({ data: user });
+    })
+    .catch((error) => {
+      if (error.name === 'CastError') return next(new BadRequestError(ERROR_MESSAGES.unCorrectID));
+      return next(error);
     });
 };
