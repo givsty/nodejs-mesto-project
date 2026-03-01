@@ -10,7 +10,6 @@ import {
 const router = Router();
 
 router.get('/', getUsers);
-router.get('/', getUsers);
 
 router.get('/me', getCurrentUser);
 
