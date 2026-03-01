@@ -12,7 +12,10 @@ export const ERROR_MESSAGES = {
   unCorrectID: 'Некорректный id',
   cardNotFound: 'Карточка не найдена',
   userNotFoud: 'Пользователь не найден',
-  unauthorized: 'Неправильные почта или пароль',
+  unauthorized: {
+    wrongEmailorPass: 'Неправильные почта или пароль',
+    notAuth: 'Необходима авторизация',
+  },
   forbidden: 'Нет прав для удаления карточки',
   conflict: 'Пользователь с таким email уже существует',
 } as const;
