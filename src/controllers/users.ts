@@ -21,7 +21,10 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.status(201).send({ data: user }))
+    .then((user) => {
+      const { password: _, ...userWithoutPassword } = user.toObject();
+      return res.status(201).send({ data: userWithoutPassword });
+    })
     .catch((error) => {
       if (error.code === 11000) {
         return next(new ConflictError(ERROR_MESSAGES.conflict));
@@ -35,7 +38,12 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => {
   User.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.send({
+      data: users.map((user) => {
+        const { password: _, ...userWithoutPassword } = user.toObject();
+        return userWithoutPassword;
+      }),
+    }))
     .catch(next);
 };
 
@@ -45,7 +53,8 @@ export const findUserById = (req: Request, res: Response, next: NextFunction) =>
   User.findById(id)
     .then((user) => {
       if (!user) return next(new NotFoundError(ERROR_MESSAGES.userNotFoud));
-      return res.send({ data: user });
+      const { password: _, ...userWithoutPassword } = user.toObject();
+      return res.send({ data: userWithoutPassword });
     })
     .catch((error) => {
       if (error.name === 'CastError') return next(new BadRequestError(ERROR_MESSAGES.unCorrectID));
@@ -60,7 +69,8 @@ export const updateAvatar = (req: UserRequest, res: Response, next: NextFunction
   return User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((updatedUser) => {
       if (!updatedUser) return next(new NotFoundError(ERROR_MESSAGES.userNotFoud));
-      return res.send({ data: updatedUser });
+      const { password: _, ...userWithoutPassword } = updatedUser.toObject();
+      return res.send({ data: userWithoutPassword });
     })
     .catch((error) => {
       if (error.name === 'ValidationError') return next(new BadRequestError(ERROR_MESSAGES.uncorrectData));
@@ -76,7 +86,8 @@ export const updateUser = (req: UserRequest, res: Response, next: NextFunction) 
   return User.findByIdAndUpdate(userId, { name, about }, { new: true })
     .then((updatedUser) => {
       if (!updatedUser) return next(new NotFoundError(ERROR_MESSAGES.userNotFoud));
-      return res.send({ data: updatedUser });
+      const { password: _, ...userWithoutPassword } = updatedUser.toObject();
+      return res.send({ data: userWithoutPassword });
     })
     .catch((error) => {
       if (error.name === 'ValidationError') return next(new BadRequestError(ERROR_MESSAGES.uncorrectData));
@@ -109,7 +120,8 @@ export const getCurrentUser = (req: UserRequest, res: Response, next: NextFuncti
   User.findById(_id)
     .then((user) => {
       if (!user) return next(new NotFoundError(ERROR_MESSAGES.userNotFoud));
-      return res.send({ data: user });
+      const { password: _, ...userWithoutPassword } = user.toObject();
+      return res.send({ data: userWithoutPassword });
     })
     .catch((error) => {
       if (error.name === 'CastError') return next(new BadRequestError(ERROR_MESSAGES.unCorrectID));
