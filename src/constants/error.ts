@@ -4,6 +4,7 @@ export const CODE_STATUS = {
   forbidden: 403,
   notFound: 404,
   internalServerError: 500,
+  success: 201,
 };
 
 export const ERROR_MESSAGES = {
